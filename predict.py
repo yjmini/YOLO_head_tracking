@@ -1,11 +1,11 @@
 from ultralytics import YOLO
 
-model = YOLO("./runs/detect/train/weights/best.pt")
+model = YOLO("./runs/detect/train2/weights/best.pt")
 
 results = model.track(
-    source="./videos/test2.mp4", 
+    source="./videos/test3.mp4", 
     save=True,
     show=True,
-    conf=0.5,
+    conf=0.7,
     tracker="bytetrack.yaml"
 )

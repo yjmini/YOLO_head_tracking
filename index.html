@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexFlow Robotics | Tactical Command Center</title>
+    <style>
+        /* CSS: 다크/택티컬 테마 디자인 */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-color: #050914;
+            --panel-bg: #0d1425;
+            --border-color: #1a2a4c;
+            --accent-green: #00ff66;
+            --accent-red: #ff3333;
+            --text-main: #e0e6ed;
+            --text-dim: #7082a3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Share Tech Mono', monospace; /* 사이버틱한 고정폭 폰트 */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 상단 헤더 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--panel-bg);
+            border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 255, 102, 0.05);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 5px 15px;
+            border-radius: 4px;
+            background: rgba(0, 255, 102, 0.1);
+        }
+
+        .blink-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 메인 레이아웃 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        /* 왼쪽: 비디오 플레이어 영역 */
+        .video-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            flex: 1;
+            background: #000;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .video-wrapper::after {
+            /* 택티컬한 스캔라인 효과 */
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 오른쪽: 원격 측정 데이터 및 로그 영역 */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-box {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .data-value {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .data-value.alert { color: var(--accent-red); }
+
+        /* 시스템 로그 터미널 느낌 */
+        .log-box {
+            flex: 1;
+            background-color: #03050a;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            border-radius: 4px;
+        }
+
+        .log-entry { margin-bottom: 5px; }
+        .log-time { color: var(--accent-green); margin-right: 8px; }
+        .log-warn { color: #ffcc00; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">NEXFLOW<span>_ROBOTICS</span></div>
+        <div class="status-badge">
+            <div class="blink-dot"></div>
+            SCOUT-01 ONLINE
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="video-section">
+            <div class="video-wrapper">
+                <video src="./for_web_result.mp4" autoplay loop muted playsinline></video>
+                <div style="position: absolute; top: 20px; left: 20px; border-top: 3px solid var(--accent-green); border-left: 3px solid var(--accent-green); width: 30px; height: 30px; z-index: 10;"></div>
+                <div style="position: absolute; bottom: 20px; right: 20px; border-bottom: 3px solid var(--accent-green); border-right: 3px solid var(--accent-green); width: 30px; height: 30px; z-index: 10;"></div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="panel-box">
+                <div class="panel-title">Target Telemetry</div>
+                <div class="data-row">
+                    <span>Target ID:</span>
+                    <span class="data-value">TRK-001</span>
+                </div>
+                <div class="data-row">
+                    <span>Status:</span>
+                    <span class="data-value alert">TRACKING ACTIVE</span>
+                </div>
+                <div class="data-row">
+                    <span>Gimbal Yaw:</span>
+                    <span class="data-value" id="yaw-val">+14.2°</span>
+                </div>
+                <div class="data-row">
+                    <span>Gimbal Pitch:</span>
+                    <span class="data-value" id="pitch-val">-3.5°</span>
+                </div>
+            </div>
+
+            <div class="panel-box" style="flex: 1;">
+                <div class="panel-title">System Console</div>
+                <div class="log-box" id="log-container">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById('log-container');
+        const yawVal = document.getElementById('yaw-val');
+        const pitchVal = document.getElementById('pitch-val');
+
+        const logMessages = [
+            "[VISION] Dual model pipeline synchronized.",
+            "[TRACKER] Target ID:1 acquired.",
+            "[CALC] Pose estimation vector generated.",
+            "[SYS] Adjusting camera gimbal...",
+            "<span class='log-warn'>[WARN] Target moving dynamically.</span>",
+            "[TRACKER] Updating bounding box coords.",
+            "[NET] Stream latency: 12ms."
+        ];
+
+        // 가짜 터미널 로그를 주기적으로 찍어주는 함수
+        function addLog() {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+            const randomMsg = logMessages[Math.floor(Math.random() * logMessages.length)];
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${randomMsg}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight; // 스크롤 맨 아래로
+
+            // 로그가 너무 길어지면 위쪽 삭제
+            if(logContainer.childElementCount > 50) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        // 가짜 짐벌 각도 데이터를 흔들어주는 함수
+        function updateTelemetry() {
+            const currentYaw = parseFloat(yawVal.innerText);
+            const currentPitch = parseFloat(pitchVal.innerText);
+            
+            const newYaw = (currentYaw + (Math.random() * 2 - 1)).toFixed(1);
+            const newPitch = (currentPitch + (Math.random() * 0.6 - 0.3)).toFixed(1);
+
+            yawVal.innerText = (newYaw >= 0 ? '+' : '') + newYaw + '°';
+            pitchVal.innerText = (newPitch >= 0 ? '+' : '') + newPitch + '°';
+        }
+
+        // 타이머 실행
+        setInterval(addLog, 1200);
+        setInterval(updateTelemetry, 500);
+        
+        // 초기 시작 로그
+        addLog();
+    </script>
+</body>
+</html>
