@@ -3,3 +3,7 @@
 *.pt
 runs
 datasets
+archive/
+videos/
+*_result.mp4
+!for_web_result.mp4
